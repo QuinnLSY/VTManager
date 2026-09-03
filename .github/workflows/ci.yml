@@ -67,3 +67,36 @@ jobs:
 
       - name: 命令一致性静态审计
         run: python3 scripts/audit-command-consistency.py
+
+  # Windows 专属代码（#[cfg(target_os = "windows")] 分支）在 macOS 上不会被编译，
+  # 因此必须由 Windows runner 单独把关，否则平台相关编译错误只能在发版打包时才暴露。
+  check-windows:
+    name: Windows 编译检查
+    runs-on: windows-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 缓存 Rust 构建产物
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: 安装前端依赖
+        run: npm ci
+
+      - name: 前端类型检查与构建
+        run: npm run build
+
+      - name: Rust 编译检查（Windows）
+        run: cargo check --manifest-path src-tauri/Cargo.toml

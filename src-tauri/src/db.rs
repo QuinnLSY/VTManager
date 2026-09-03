@@ -149,7 +149,9 @@ fn has_column(conn: &Connection, table: &str, col: &str) -> Result<bool, String>
 /// 重命名/移动后同步更新数据库中的路径引用（含子级）
 /// Windows 下路径分隔符为 `\`，索引中两种分隔符都可能出现，因此各做一次替换
 pub fn rename_refs(conn: &Connection, old: &str, new: &str) -> Result<(), String> {
-    let variants = vec![(old.to_string(), new.to_string())];
+    // Windows 分支会再 push 一组「反斜杠转正斜杠」变体；非 Windows 下 mut 无用，抑制警告
+    #[allow(unused_mut)]
+    let mut variants = vec![(old.to_string(), new.to_string())];
     #[cfg(target_os = "windows")]
     {
         let o2 = old.replace('\\', "/");
