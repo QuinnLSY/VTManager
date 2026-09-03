@@ -14,6 +14,7 @@
   <a href="https://github.com/QuinnLSY/VTManager/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-3ddc97?style=flat-square" alt="MIT License"></a>
   <a href="https://quinnlsy.github.io/VTManager/"><img src="https://img.shields.io/badge/在线操作手册-阅读-38e1ff?style=flat-square" alt="在线手册"></a>
   <a href="https://github.com/QuinnLSY/VTManager/issues"><img src="https://img.shields.io/badge/问题反馈-Issues-ffc24d?style=flat-square" alt="Issues"></a>
+  <a href="https://github.com/QuinnLSY/VTManager/actions/workflows/ci.yml"><img src="https://github.com/QuinnLSY/VTManager/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
 </p>
 
 <p>
@@ -309,6 +310,8 @@ VTManager/
 ## 🤝 参与贡献
 
 欢迎任何形式的贡献：**提交 Issue 反馈问题、提出功能建议、改进文档，或提交 Pull Request**。
+
+📄 **[贡献指南 CONTRIBUTING.md](CONTRIBUTING.md)** · 🔒 **[安全策略 SECURITY.md](SECURITY.md)** · 📝 **[更新日志 CHANGELOG.md](CHANGELOG.md)**
 
 ### 提交 Issue
 

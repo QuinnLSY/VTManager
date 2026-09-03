@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 在线操作手册
+    url: https://quinnlsy.github.io/VTManager/
+    about: 功能说明、快捷键与常见问题，请先查阅手册
+  - name: 💬 使用咨询与讨论
+    url: https://github.com/QuinnLSY/VTManager/discussions
+    about: 使用问题、想法交流、经验分享请到 Discussions
+  - name: ⬇️ 下载最新版
+    url: https://github.com/QuinnLSY/VTManager/releases/latest
+    about: 获取最新的预编译安装包

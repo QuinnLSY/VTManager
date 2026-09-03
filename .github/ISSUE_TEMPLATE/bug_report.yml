@@ -1,0 +1,66 @@
+name: 🐛 Bug 反馈
+description: 反馈使用中遇到的异常行为或错误
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢你花时间反馈问题！🙏
+        提交前请先确认：① 已搜索过[已有 Issue](https://github.com/QuinnLSY/VTManager/issues) 避免重复；② 使用的是[最新版本](https://github.com/QuinnLSY/VTManager/releases/latest)。
+        若只是使用上的疑问，请移步 [Discussions](https://github.com/QuinnLSY/VTManager/discussions) 或查阅[在线操作手册](https://quinnlsy.github.io/VTManager/)。
+
+  - type: input
+    id: version
+    attributes:
+      label: 应用版本
+      description: 可在应用启动页或「设置 → 关于」中查看
+      placeholder: v1.0.2
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: 操作系统
+      options:
+        - macOS（Apple Silicon）
+        - macOS（Intel）
+        - Windows 11
+        - Windows 10
+        - 其他 / 源码构建
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: 问题描述
+      description: 清晰描述遇到的问题，以及你原本期望的行为
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: 复现步骤
+      description: 越具体越好，便于我们定位
+      placeholder: |
+        1. 打开应用，进入「xxx」目录
+        2. 点击「xxx」按钮
+        3. 出现 xxx 现象
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 错误日志或截图
+      description: 如有红色错误提示、控制台日志或界面截图，请一并附上（日志可用代码块包裹）
+      render: shell
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 补充信息
+      description: 例如资料库规模（文件数量 / 容量）、媒体格式、是否外接硬盘、是否刚升级过等

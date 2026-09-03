@@ -1,0 +1,69 @@
+name: CI
+
+# 质量门禁：前端构建 + Rust 编译检查 + Rust 单元测试
+# 使用 macOS runner：本项目主平台为 macOS（视频处理主路径依赖 AVFoundation），
+# 且 macOS 镜像已内置 Rust 构建所需的系统框架，无需额外安装系统依赖。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: 构建与测试（macOS）
+    runs-on: macos-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: 安装 Rust 工具链
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 缓存 Rust 构建产物
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri
+
+      - name: 安装前端依赖
+        run: npm ci
+
+      - name: 前端类型检查与构建
+        run: npm run build
+
+      - name: 准备 ffmpeg
+        # 部分 Rust 单测（如 remux 转封装）需要真实 ffmpeg 端到端运行
+        run: |
+          if [ ! -f bin/ffmpeg ]; then
+            brew install ffmpeg
+            cp "$(which ffmpeg)" bin/ffmpeg
+          fi
+          bin/ffmpeg -version | head -1
+
+      - name: Rust 代码格式检查（仅提示，不阻断）
+        continue-on-error: true
+        run: |
+          rustup component add rustfmt
+          cargo fmt --manifest-path src-tauri/Cargo.toml --check
+
+      - name: Rust 编译检查
+        run: cargo check --manifest-path src-tauri/Cargo.toml
+
+      - name: Rust 单元测试
+        run: cargo test --manifest-path src-tauri/Cargo.toml --lib
+
+      - name: 命令一致性静态审计
+        run: python3 scripts/audit-command-consistency.py

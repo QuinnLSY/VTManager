@@ -19,6 +19,7 @@ mkdir -p release/VTManager
 rm -rf release/VTManager/VTManager.app
 cp -R "$APP" release/VTManager/
 cp 操作手册.html app-icon.png release/VTManager/ 2>/dev/null || true
+cp docs/使用须知.txt release/VTManager/ 2>/dev/null || true
 
 # 关键：上面把 ffmpeg 复制进 Contents/MacOS 后，bundle 内容已变，构建期由 linker 打的
 # ad-hoc 签名随之失效（spctl 会报 "code has no resources but signature indicates they
