@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="zh-CN" data-page-node-id="0d0h8dZc2j3vdYCSE7nHHH">
+<head data-page-node-id="DGL3SHpur6WylDKVhQCBgi">
+<meta charset="UTF-8" data-page-node-id="8i9Dgf5uns24LGjvIP0wCb" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" data-page-node-id="JYm7RzhBMekfsADZ9UCkNx" />
+<title>VTManager v1.0.2 · 本地媒体管理器 · 性能进化发布页</title>
+<style>
+  :root {
+    --bg: #070b16; --bg2: #0b1122;
+    --panel: rgba(255,255,255,.045); --panel-bd: rgba(255,255,255,.09);
+    --glass: rgba(13,20,40,.6);
+    --text: #e8eefb; --sub: #93a3c4; --faint: #5c6b8f;
+    --cy: #38e1ff; --bl: #5b8cff; --vi: #9d6bff; --ok: #3ddc97; --warn: #ffc24d; --danger: #ff4d6d;
+    --grad: linear-gradient(120deg, var(--cy) 0%, var(--bl) 50%, var(--vi) 100%);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.8; font-size: 15px; overflow-x: hidden;
+  }
+  ::selection { background: rgba(91,140,255,.35); }
+
+  /* ===== 背景：粒子 + 光晕 ===== */
+  #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+  .glow { position: fixed; border-radius: 50%; filter: blur(90px); opacity: .28; z-index: 0; pointer-events: none; }
+  .glow.g1 { width: 480px; height: 480px; background: #2450ff; top: -140px; left: -100px; animation: float 14s ease-in-out infinite; }
+  .glow.g2 { width: 420px; height: 420px; background: #7b2cff; top: 30%; right: -140px; animation: float 18s ease-in-out infinite reverse; }
+  .glow.g3 { width: 380px; height: 380px; background: #00c8ff; bottom: -120px; left: 28%; animation: float 22s ease-in-out infinite; }
+  @keyframes float { 0%,100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-36px) scale(1.08); } }
+
+  .wrap { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 0 26px 90px; }
+
+  /* ===== 导航 ===== */
+  nav { position: sticky; top: 0; z-index: 20; background: rgba(7,11,22,.55); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); border-bottom: 1px solid rgba(255,255,255,.06); }
+  nav .wrap { display: flex; align-items: center; gap: 6px; padding-top: 12px; padding-bottom: 12px; flex-wrap: wrap; }
+  nav .brand { font-weight: 800; font-size: 16px; letter-spacing: .5px; margin-right: 14px; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  nav a { color: var(--sub); text-decoration: none; font-size: 13.5px; padding: 6px 13px; border-radius: 9px; transition: .25s; }
+  nav a:hover { color: var(--text); background: rgba(255,255,255,.07); }
+  nav .ver-chip { margin-left: auto; font-size: 11.5px; color: var(--cy); border: 1px solid rgba(56,225,255,.35); background: rgba(56,225,255,.08); padding: 3px 11px; border-radius: 99px; font-weight: 600; }
+
+  /* ===== Hero ===== */
+  header.hero { text-align: center; padding: 84px 0 46px; }
+  .logo { width: 92px; height: 92px; border-radius: 24px; box-shadow: 0 0 0 1px rgba(255,255,255,.12), 0 18px 50px rgba(56,140,255,.35); display: inline-flex; align-items: center; justify-content: center; font-size: 44px; background: linear-gradient(135deg, #12224d, #0b1122); font-weight: 800; color: var(--cy); animation: pulse 4s ease-in-out infinite; }
+  @keyframes pulse { 0%,100% { box-shadow: 0 0 0 1px rgba(255,255,255,.12), 0 18px 50px rgba(56,140,255,.35); } 50% { box-shadow: 0 0 0 1px rgba(56,225,255,.5), 0 18px 60px rgba(56,225,255,.5); } }
+  .ver { display: inline-block; margin-top: 20px; background: rgba(56,225,255,.1); color: var(--cy); border: 1px solid rgba(56,225,255,.3); border-radius: 99px; padding: 4px 18px; font-size: 13px; font-weight: 600; letter-spacing: .5px; }
+  .hero h1 { font-size: clamp(34px, 6vw, 54px); font-weight: 800; margin: 18px 0 8px; letter-spacing: 1px; line-height: 1.25;
+    background: linear-gradient(115deg, #7df3ff 0%, #5b8cff 45%, #b18cff 80%, #7df3ff 110%);
+    background-size: 200% auto; -webkit-background-clip: text; background-clip: text; color: transparent;
+    animation: shine 6s linear infinite; }
+  @keyframes shine { to { background-position: 200% center; } }
+  .hero .lead { color: var(--sub); font-size: 17px; max-width: 640px; margin: 12px auto 0; }
+  .cta { margin-top: 30px; display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn { display: inline-block; text-decoration: none; font-weight: 700; font-size: 15px; padding: 12px 30px; border-radius: 12px; transition: .25s; cursor: pointer; border: none; }
+  .btn.primary { color: #04101f; background: var(--grad); box-shadow: 0 8px 30px rgba(64,140,255,.35); }
+  .btn.primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(64,140,255,.5); }
+  .btn.ghost { color: var(--text); background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14); }
+  .btn.ghost:hover { background: rgba(255,255,255,.1); }
+
+  /* ===== 数据统计条 ===== */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 52px; }
+  @media (max-width: 760px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat { background: var(--panel); border: 1px solid var(--panel-bd); border-radius: 16px; padding: 20px 16px; backdrop-filter: blur(12px); }
+  .stat .num { font-size: 30px; font-weight: 800; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .stat .lab { font-size: 13px; color: var(--sub); margin-top: 4px; }
+
+  /* ===== 通用区块 ===== */
+  section.block { margin-top: 74px; }
+  .kicker { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; font-weight: 700; letter-spacing: 2px; color: var(--cy); text-transform: uppercase; }
+  .kicker::before { content: ""; width: 26px; height: 2px; background: var(--grad); border-radius: 2px; }
+  h2 { font-size: 28px; font-weight: 800; margin: 12px 0 8px; letter-spacing: .5px; }
+  .sec-desc { color: var(--sub); max-width: 620px; margin-bottom: 28px; }
+  h3 { font-size: 16px; margin-bottom: 6px; }
+
+  /* ===== 特性卡片 ===== */
+  .feats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  @media (max-width: 900px) { .feats { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .feats { grid-template-columns: 1fr; } }
+  .feat { position: relative; overflow: hidden; background: var(--panel); border: 1px solid var(--panel-bd); border-radius: 18px; padding: 24px 22px; backdrop-filter: blur(12px); transition: .3s; }
+  .feat::before { content: ""; position: absolute; inset: 0 0 auto 0; height: 2px; background: var(--grad); opacity: 0; transition: .3s; }
+  .feat:hover { transform: translateY(-4px); border-color: rgba(91,140,255,.4); box-shadow: 0 16px 44px rgba(30,60,140,.35); }
+  .feat:hover::before { opacity: 1; }
+  .feat .ic { font-size: 26px; margin-bottom: 12px; }
+  .feat p { color: var(--sub); font-size: 13.5px; }
+  .feat .tag { display: inline-block; margin-top: 12px; font-size: 11px; color: var(--ok); background: rgba(61,220,151,.1); border: 1px solid rgba(61,220,151,.25); padding: 2px 10px; border-radius: 99px; font-weight: 600; }
+  .feat .tag.cy { color: var(--cy); background: rgba(56,225,255,.1); border-color: rgba(56,225,255,.25); }
+
+  /* ===== 性能区块 ===== */
+  .perf-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 820px) { .perf-grid { grid-template-columns: 1fr; } }
+  .perf { background: var(--panel); border: 1px solid var(--panel-bd); border-radius: 18px; padding: 24px 24px 20px; backdrop-filter: blur(12px); }
+  .perf h3 { display: flex; justify-content: space-between; align-items: baseline; }
+  .perf h3 span.gain { color: var(--cy); font-weight: 800; font-size: 15px; }
+  .perf p { color: var(--sub); font-size: 13px; margin: 6px 0 14px; }
+  .bar { height: 8px; border-radius: 99px; background: rgba(255,255,255,.08); overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; border-radius: 99px; background: var(--grad); transition: width 1.4s cubic-bezier(.2,.7,.2,1); }
+  .new-badge { display: inline-block; margin-left: 8px; font-size: 10.5px; font-weight: 800; letter-spacing: .5px; color: #04101f; background: var(--grad); padding: 1px 8px; border-radius: 99px; vertical-align: 2px; }
+
+  /* ===== 存储管理 ===== */
+  .storage { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; align-items: stretch; }
+  @media (max-width: 820px) { .storage { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--panel-bd); border-radius: 18px; padding: 26px; backdrop-filter: blur(12px); }
+  .tree { font-family: ui-monospace, Menlo, monospace; font-size: 13px; line-height: 2; color: var(--sub); }
+  .tree .dir { color: var(--cy); }
+  .tree .file { color: var(--sub); }
+  .tree .sz { color: var(--faint); margin-left: 8px; font-size: 12px; }
+  .tree .hl { color: var(--warn); }
+  .tree .ok { color: var(--ok); }
+  .size-row { display: flex; justify-content: space-between; font-size: 13.5px; padding: 8px 0; border-bottom: 1px dashed rgba(255,255,255,.08); }
+  .size-row:last-of-type { border-bottom: none; }
+  .size-row .v { font-weight: 700; color: var(--text); }
+  .size-row .v.danger { color: var(--danger); }
+  .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+  .clear-cache-btn {
+    flex: 1; padding: 13px 16px; border: none; cursor: pointer;
+    background: linear-gradient(120deg, #ff3d5e, #ff2d55); color: #fff; font-size: 14.5px; font-weight: 800; letter-spacing: 1px;
+    border-radius: 12px; box-shadow: 0 8px 28px rgba(255,45,85,.35); transition: .25s; position: relative; overflow: hidden;
+  }
+  .clear-cache-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(255,45,85,.5); }
+  .clear-cache-btn:disabled, .opt-db-btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+  .opt-db-btn {
+    flex: 1; padding: 13px 16px; border: none; cursor: pointer;
+    background: linear-gradient(120deg, #18c98c, #0fb577); color: #fff; font-size: 14.5px; font-weight: 800; letter-spacing: 1px;
+    border-radius: 12px; box-shadow: 0 8px 28px rgba(24,201,140,.3); transition: .25s; position: relative; overflow: hidden;
+  }
+  .opt-db-btn:hover { transform: translateY(-2px); box-shadow: 0 12px 36px rgba(24,201,140,.45); }
+  .spin { display: inline-block; width: 15px; height: 15px; border: 2px solid rgba(255,255,255,.35); border-top-color: #fff; border-radius: 50%; vertical-align: -2px; margin-right: 8px; animation: rot .8s linear infinite; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+  .cache-note { font-size: 12px; color: var(--faint); margin-top: 12px; text-align: center; }
+  .cache-toast { position: fixed; left: 50%; bottom: 34px; transform: translateX(-50%) translateY(80px); z-index: 99;
+    background: rgba(10,18,34,.92); border: 1px solid rgba(61,220,151,.4); color: var(--ok); padding: 12px 26px; border-radius: 12px;
+    font-size: 14px; font-weight: 600; backdrop-filter: blur(10px); opacity: 0; transition: .4s; box-shadow: 0 10px 40px rgba(0,0,0,.5); }
+  .cache-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ===== 指南 ===== */
+  .steps { counter-reset: s; display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 26px; }
+  @media (max-width: 820px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+  .step { position: relative; background: var(--panel); border: 1px solid var(--panel-bd); border-radius: 16px; padding: 26px 18px 18px; }
+  .step::before { counter-increment: s; content: "0" counter(s); position: absolute; top: 12px; right: 16px; font-size: 26px; font-weight: 800; color: rgba(255,255,255,.07); font-family: ui-monospace, monospace; }
+  .step b { display: block; color: var(--text); margin-bottom: 6px; }
+  .step span { color: var(--sub); font-size: 13px; }
+  table { width: 100%; border-collapse: collapse; margin: 14px 0 26px; font-size: 13.5px; }
+  th, td { border: 1px solid rgba(255,255,255,.09); padding: 10px 14px; text-align: left; }
+  th { background: rgba(91,140,255,.1); color: var(--cy); font-weight: 700; }
+  td { color: var(--sub); }
+  kbd { background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.16); border-bottom-width: 2px; border-radius: 6px; padding: 2px 9px; font-size: 12.5px; font-family: ui-monospace, Menlo, monospace; color: var(--text); white-space: nowrap; }
+  .tips { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 820px) { .tips { grid-template-columns: 1fr; } }
+  .tip { background: rgba(56,225,255,.05); border: 1px solid rgba(56,225,255,.16); border-radius: 14px; padding: 16px 20px; font-size: 13.5px; color: var(--sub); }
+  .tip b { color: var(--cy); }
+
+  /* ===== FAQ ===== */
+  details { background: var(--panel); border: 1px solid var(--panel-bd); border-radius: 14px; padding: 0 22px; margin-bottom: 12px; overflow: hidden; backdrop-filter: blur(12px); }
+  details summary { cursor: pointer; list-style: none; padding: 17px 0; font-weight: 700; font-size: 15px; display: flex; justify-content: space-between; align-items: center; }
+  details summary::-webkit-details-marker { display: none; }
+  details summary::after { content: "+"; font-size: 20px; color: var(--cy); transition: .25s; }
+  details[open] summary::after { transform: rotate(45deg); }
+  details .ans { color: var(--sub); font-size: 14px; padding-bottom: 18px; }
+
+  /* ===== 页脚 ===== */
+  footer { border-top: 1px solid rgba(255,255,255,.06); margin-top: 80px; padding: 30px 0 40px; text-align: center; color: var(--faint); font-size: 13px; position: relative; z-index: 1; }
+  footer .f-grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; font-weight: 700; }
+
+  /* ===== 滚动渐入 ===== */
+  .reveal { opacity: 0; transform: translateY(26px); transition: opacity .7s ease, transform .7s ease; }
+  .reveal.on { opacity: 1; transform: none; }
+  .d1 { transition-delay: .08s; } .d2 { transition-delay: .16s; } .d3 { transition-delay: .24s; } .d4 { transition-delay: .32s; }
+  .d5 { transition-delay: .40s; } .d6 { transition-delay: .48s; } .d7 { transition-delay: .56s; } .d8 { transition-delay: .64s; }
+  .d9 { transition-delay: .72s; } .d10 { transition-delay: .80s; } .d11 { transition-delay: .88s; }
+
+  @media (max-width: 600px) {
+    nav .ver-chip { display: none; }
+    header.hero { padding-top: 56px; }
+  }
+</style>
+</head>
+<body data-page-node-id="2c8gA3yHCIHmohqEguL5sI">
+<canvas id="stars" data-page-node-id="ohfd1CbdVpCfgjqHDAekxC"></canvas>
+<div class="glow g1" data-page-node-id="zUYUH5zB48Dt3i8hTT8Ddx"></div><div class="glow g2" data-page-node-id="NivWWQkzigZunb9Oc7Kc6a"></div><div class="glow g3" data-page-node-id="mcdhrFN78wnVzw6CAFgHw9"></div>
+
+<nav data-page-node-id="yBW9fzFWTmbWRwZ7c2n3a3">
+  <div class="wrap" data-page-node-id="3YP3G2SsqprubIx8iFGojV">
+    <span class="brand" data-page-node-id="gU0H5C2R7yespYFbav9Vab">VTManager</span>
+    <a href="#feats" data-page-node-id="AfnvipqZFLqTTHZGHTLuEL">特性</a>
+    <a href="#perf" data-page-node-id="8ynIF8WJ5iF0gCgxfRG5J8">性能进化</a>
+    <a href="#storage" data-page-node-id="F2TDaR5pNfNtO2Gmh4YPV9">存储管理</a>
+    <a href="#guide" data-page-node-id="gVt1EwcSPPXn0ACCu9NMMN">快速上手</a>
+    <a href="#faq" data-page-node-id="9SgnpeTrYG6qwBGK24TuLI">FAQ</a>
+    <span class="ver-chip" data-page-node-id="81ZOOywSeJRNedBzByG04Z">v1.0.2 · 性能进化版</span>
+  </div>
+</nav>
+
+<header class="hero" data-page-node-id="LE0IHCZaVf4Ad5bXgXXZyi">
+  <div class="logo" data-page-node-id="xCNuCBPYAWI740GAQvYisz">VT</div>
+  <div class="ver" data-page-node-id="1CWtviRfbHDUqRq83PyQvn">v1.0.2 · 性能进化版 · 2026-08-31</div>
+  <h1 data-page-node-id="DamY521URJXBaex1ZEDzdD">本地媒体管理器<br  data-page-node-id="aS7H4z9sqiBJIfozGVpU0H"/>更快 · 更轻 · 更聪明</h1>
+  <p class="lead" data-page-node-id="e2oFg2qVUVNS7mDf0SLbML">为 macOS 打造的本地视频 / 图片管理工具。系统级视频解码、WebP 智能缓存、空闲预生成缩略图与数据库自优化——万级媒体库也能秒开秒刷。</p>
+  <div class="cta" data-page-node-id="Dtv2Xy4A4zUsfS5sZ7BZYi">
+    <a class="btn primary" href="#guide" data-page-node-id="zXqEk4FUM1fLddMJCYgaQq">立即上手</a>
+    <a class="btn ghost" href="#perf" data-page-node-id="7UM0ER0hgdXDtrcUi1scow">查看性能进化</a>
+  </div>
+  <div class="stats" data-page-node-id="Yj2byHYBYTEq5XST2DCZ1g">
+    <div class="stat reveal" data-page-node-id="tAnNo7cV80EZmRkIwjCpBl"><div class="num" data-page-node-id="DtG1CfGlNHN2romEQJg9i0"><span class="count" data-target="12" data-page-node-id="BaNqJB44LpjwOv4TXY0mtA">0</span>×</div><div class="lab" data-page-node-id="gh96UviwWrA8nicxPbNtGn">重扫索引速度提升</div></div>
+    <div class="stat reveal d1" data-page-node-id="kAaIzwDodhOHXoCR2vOEAx"><div class="num" data-page-node-id="l9y6zzFLY1W4QRw16J52mb">−<span class="count" data-target="90" data-page-node-id="VfQSayzlw8nGuf9mHjl1IW">0</span>%</div><div class="lab" data-page-node-id="gpnNMolnW9Zq6LSsTB0Uyl">大图预览内存占用</div></div>
+    <div class="stat reveal d2" data-page-node-id="3VXWvsnAEDZoTopAxVtCHQ"><div class="num" data-page-node-id="FtIBjaDwLQv0pOnVRx9MFd">−<span class="count" data-target="49" data-page-node-id="fO6ORHECm3Sn2bZKtG6Uhs">0</span>MB</div><div class="lab" data-page-node-id="r5SDWiYXpyus88ngYbtNiT">安装包体积（移除 ffprobe）</div></div>
+    <div class="stat reveal d3" data-page-node-id="0KDuVF2H1QCqbC1iPvSs7v"><div class="num" data-page-node-id="oTNBHWo4onhCJcgDSavFto">−<span class="count" data-target="33" data-page-node-id="HOKNcL8Ss5zTjyyVitPPQ9">0</span>%</div><div class="lab" data-page-node-id="Nb2vvpD522LC1HrpJ1EWJG">前端主包体积（代码分割）</div></div>
+  </div>
+</header>
+
+<div class="wrap" data-page-node-id="kQSz0NDS5KINFnxso0eIwc">
+
+  <section class="block" id="feats" data-page-node-id="c93RnYNLaVMXYMcMCN9KdU">
+    <div class="kicker" data-page-node-id="uohuYlUyVoSXddjxhDMjwo">Features</div>
+    <h2 data-page-node-id="VPAg9pCMR8kdD7bMh3uOGz">一站式的本地媒体体验</h2>
+    <p class="sec-desc" data-page-node-id="4dTUNP4J7A0hGMfBjDjVEm">不只是播放器，更是你的媒体资料库：批量管理、全局搜索、断点续播、画中画，全部原生流畅。</p>
+    <div class="feats" data-page-node-id="sQd0fAEtQABeAUZ6OU1FJg">
+      <div class="feat reveal" data-page-node-id="w8hroK6ajmBQcZdlrxC5nd"><div class="ic" data-page-node-id="0LI5GT61SfH3CNruAJGaS8">🏷️</div><h3 data-page-node-id="59A6UtyaN09nEefUy4esf0">批量标签与收藏</h3><p data-page-node-id="KD3AXEaOLpkz3lwbg5JReo">多选文件一键打标签、加收藏，底部工具条快速操作，配合筛选器按标签 / 收藏秒级过滤。</p><span class="tag" data-page-node-id="DYXd5goGXVK4Nkf5NLMXwn">效率</span></div>
+      <div class="feat reveal d1" data-page-node-id="sHB7TherXoV8c4G2g7y8Zz"><div class="ic" data-page-node-id="5QCZlW3HmpbuS0zKvCd7CX">🧱</div><h3 data-page-node-id="Ia8SlkEo4byIOwK7jgBSHD">网格 / 分栏双视图</h3><p data-page-node-id="juyInYOIQHgUNYUCZ2zPMM">网格浏览缩略图瀑布流，或分栏模式下快速展开子目录，两种视图自由切换。</p><span class="tag" data-page-node-id="iZHFj20dP5BmKCVy0W54QJ">浏览</span></div>
+      <div class="feat reveal d2" data-page-node-id="Q2SQvGDXjCmhGPHET7kaNG"><div class="ic" data-page-node-id="p94zThrEg30F7TmFFvY7io">🪄</div><h3 data-page-node-id="UGF2Ua90JNhprSy8cOmVfC">超大目录虚拟滚动</h3><p data-page-node-id="3UKxtjtrLJjGaPt1Dd6YhB">超过 120 项自动启用虚拟滚动，仅渲染可视卡片——160 部剧集目录也不卡顿。</p><span class="tag" data-page-node-id="UDLdCh7fgj7UCUUIHH32ka">性能</span></div>
+      <div class="feat reveal d3" data-page-node-id="Jm0YdYfmvhDfBw7eiTE771"><div class="ic" data-page-node-id="OBRisssevJQMBkOGLaqzFe">▶️</div><h3 data-page-node-id="0B9rOpaKoWyffjNIu2Hbi5">断点续播 + 画中画</h3><p data-page-node-id="MGTSN99S4vurf0du4assyh">视频进度自动记忆，切到画中画窗口继续播放；图片支持旋转、画中画查看。</p><span class="tag" data-page-node-id="fTDTRkIkvKGHRPP6uZxGPd">播放</span></div>
+      <div class="feat reveal d4" data-page-node-id="r5ScrubHover001"><div class="ic" data-page-node-id="icScrubHover001">🎞️</div><h3 data-page-node-id="h3ScrubHover001">进度条悬停帧预览</h3><p data-page-node-id="pScrubHover001">鼠标在视频进度条上滑动，实时显示对应时间点的画面；主窗口与画中画全屏均支持，拖动进度条更精准。</p><span class="tag" data-page-node-id="tagScrubHover001">播放</span></div>
+      <div class="feat reveal d5" data-page-node-id="GlUa7YAxGagf0DpAZhHSiq"><div class="ic" data-page-node-id="jCKse8ovj8xQLBYSVSmZog">🔍</div><h3 data-page-node-id="ioGOWIPBqFLB0vu5XRoRxH">全局模糊搜索</h3><p data-page-node-id="tbLmilibVhi8w9eFGv17Qz">跨目录实时搜索，结果直接显示真实缩略图，边输入边出结果。</p><span class="tag" data-page-node-id="8EdGJW8cBMQcvMSy8cd7uT">搜索</span></div>
+      <div class="feat reveal" data-page-node-id="VqnNNk4dC9hABKGiKiWfgD"><div class="ic" data-page-node-id="VZ1OTpxRtaD3dhCvWj7Hlb">🌗</div><h3 data-page-node-id="Ftf5kU2KFRD4CPAhDPZ5T3">全局日夜主题</h3><p data-page-node-id="SSdoAu1AQ8ykZvl99jzfhS">日 / 夜主题全局持久记忆，图片查看器与全屏窗口自动隐藏控件，沉浸浏览。</p><span class="tag" data-page-node-id="c0Cp1gGCthJjRR2DFC1jDT">体验</span></div>
+      <div class="feat reveal d6" data-page-node-id="r6PlayerCtl001"><div class="ic" data-page-node-id="icPlayerCtl001">⚡</div><h3 data-page-node-id="h3PlayerCtl001">倍速 · 快进快退 · 点按暂停</h3><p data-page-node-id="pPlayerCtl001">0.25–6.0 倍速（预设 0.25 / 0.5 / 0.75 / 1 / 1.5 / 2，自定义 2–6 水平滑动条微调，[ / ] 按 0.25 步进）；进度条与播放 / 快进 / 快退 / 倍速 / 音量键水平居中；单击画面任意位置暂停 / 继续，双击全屏，主窗口与画中画全屏操作一致。</p><span class="tag" data-page-node-id="tagPlayerCtl001">播放</span></div>
+      <div class="feat reveal d7" data-page-node-id="r6TrashTtl001"><div class="ic" data-page-node-id="icTrashTtl001">🗑️</div><h3 data-page-node-id="h3TrashTtl001">回收站到期自动清除</h3><p data-page-node-id="pTrashTtl001">删除的文件默认 3 天自动彻底清除，可在设置改为 0–365 天（0=永不）；修改天数后站内条目即时刷新，每条记录显示剩余天数与到期日期，删除确认弹窗同步提示自动清除时间。</p><span class="tag" data-page-node-id="tagTrashTtl001">数据安全</span></div>
+      <div class="feat reveal d8" data-page-node-id="r7Subtitle001"><div class="ic" data-page-node-id="icSubtitle001">💬</div><h3 data-page-node-id="h3Subtitle001">本地字幕自动加载</h3><p data-page-node-id="pSubtitle001">视频同目录的同名 .srt / .vtt 字幕自动加载（支持多语言后缀），也可手动选择文件；CC 菜单一键开关、字号 0.8–1.5 可调，画中画全屏同步显示。</p><span class="tag" data-page-node-id="tagSubtitle001">播放</span></div>
+      <div class="feat reveal d9" data-page-node-id="r7Capture001"><div class="ic" data-page-node-id="icCapture001">📷</div><h3 data-page-node-id="h3Capture001">当前帧一键截图</h3><p data-page-node-id="pCapture001">播放中按 S 键或点控制栏相机按钮，把当前画面保存为原分辨率 PNG——默认存到资料库 captures/ 目录，也可自定义保存位置并跨会话记忆。</p><span class="tag" data-page-node-id="tagCapture001">播放</span></div>
+      <div class="feat reveal d10" data-page-node-id="r9StripWheel001"><div class="ic" data-page-node-id="icStripWheel001">🖱️</div><h3 data-page-node-id="h3StripWheel001">缩略图条滚轮浏览</h3><p data-page-node-id="pStripWheel001">播放器与图片查看器底部的缩略图条：可鼠标拖动横滑、点击跳转，<b>鼠标停在条带上转动滚轮即可前后浏览</b>（纵向滚轮自动转为条带横向滚动，触控板横向手势同样支持；不会切换当前正在播放/查看的文件，图片也不会被误缩放）。主窗与全屏窗口一致。</p><span class="tag" data-page-node-id="tagStripWheel001">播放 / 查看</span></div>
+      <div class="feat reveal d11" data-page-node-id="r10HoldBoost001"><div class="ic" data-page-node-id="icHoldBoost001">⏩</div><h3 data-page-node-id="h3HoldBoost001">长按右方向键 2× 加速</h3><p data-page-node-id="pHoldBoost001">播放视频时<b>按住右方向键不放</b>，立即以当前倍速的 2 倍速播放（上限 6×）——长按期间边看边扫过无聊片段，<b>松开即恢复原倍速</b>；快速短按仍是「下一个视频」。当前 1.5× 时按住进入 3×，松开回到 1.5×。主窗口与画中画全屏一致。</p><span class="tag" data-page-node-id="tagHoldBoost001">播放</span></div>
+    </div>
+  </section>
+
+  <section class="block" id="perf" data-page-node-id="gpuIXQKrCyD1zpYSye8pCk">
+    <div class="kicker" data-page-node-id="ADcWZb37PRQAIFeETyRKl6">Performance</div>
+    <h2 data-page-node-id="n8xylHcc5zLOo7dUKpgaJ9">性能全面进化 <span style="font-size:13px;color:var(--ok)" data-page-node-id="2a5YvvrKgqzipsNjDgoRol">v1.0.2 新增 9 项</span></h2>
+    <p class="sec-desc" data-page-node-id="af8Z8vooX9xF4BEv9G1gsh">从系统解码、缓存格式到编译优化——每一毫秒、每一兆字节都不放过。以下为本轮实测收益。</p>
+    <div class="perf-grid" data-page-node-id="TWqsMa7w6y7FNyFLnSb908">
+      <div class="perf reveal" data-page-node-id="u8kCix5D70Hp45D5xVETY0">
+        <h3 data-page-node-id="7mUQBf2I2Tchnl6JzGCKYk">AVFoundation 视频主路径 <span class="gain" data-page-node-id="djlzbAC3iFZSHfsbXTEe4K">秒级截帧<span class="new-badge" data-page-node-id="jSVNfULA1k3pBm80IhPux2">NEW</span></span></h3>
+        <p data-page-node-id="E8MHIOThUWxZJM9v6GqUFI">视频元数据探测与截帧优先走 macOS 系统解码器（AVFoundation），失败才回退 ffmpeg——发布包因此移除 ffprobe，安装体积立减 49MB。</p>
+        <div class="bar" data-page-node-id="SStACRWESMmXRbp6I5Lwji"><i data-w="96" data-page-node-id="SAjGEZZqrQ83FRV30qA9kv"></i></div>
+      </div>
+      <div class="perf reveal d1" data-page-node-id="dlzxK49jUsGq9ZYayAyF23">
+        <h3 data-page-node-id="sdO1SeNhJhIOMHOrcGaJhl">WebP 智能缓存 <span class="gain" data-page-node-id="nsGTjSk6e3MRJkI27NdHgD">体积 −40%<span class="new-badge" data-page-node-id="adIpkPeRGv2coClJLIYofZ">NEW</span></span></h3>
+        <p data-page-node-id="4nuzqoTrIDtZaxl7fTzCCM">缩略图与预览缓存从 JPEG 迁移 WebP（有损编码，缩略图 80 / 预览 88），解码更快、内存更低，同样的空间装下更多封面。</p>
+        <div class="bar" data-page-node-id="wkmSHAJjekOykbnmSqFnSG"><i data-w="90" data-page-node-id="3h7xNM8LBtYHxPHJQ4Trdp"></i></div>
+      </div>
+      <div class="perf reveal d2" data-page-node-id="fDg0pFO1uHx1IOwBlh3SiW">
+        <h3 data-page-node-id="YvYPcyYicz5fejfaHFs2dJ">目录列表内存缓存 <span class="gain" data-page-node-id="UwcA4jzdkRrgQnobyJbzXW">翻目录零等待<span class="new-badge" data-page-node-id="2xOARGJK3jCZ0GGMermRG2">NEW</span></span></h3>
+        <p data-page-node-id="Epx3BQtYfjFrL5SpN5PYue">目录列表 3 秒内存缓存 + 上限 64 条，浏览与分栏切换不再重复全量枚举；所有写操作即时失效，数据永不过期。</p>
+        <div class="bar" data-page-node-id="nAjl5kB51pFHWUgzGTNn3F"><i data-w="92" data-page-node-id="zULuSQxiXeTonbeCTqQFSq"></i></div>
+      </div>
+      <div class="perf reveal d3" data-page-node-id="8jk2wFmIR1lMEe7mS2OVQS">
+        <h3 data-page-node-id="eEdQm8gRziVUVjPo7koAnt">弹窗组件代码分割 <span class="gain" data-page-node-id="4cyCqQwFzNcw3syJ38WsxW">主包 −33%<span class="new-badge" data-page-node-id="pNh9GxrYJdNLNEHTqangS8">NEW</span></span></h3>
+        <p data-page-node-id="JrnU2mkVJ8QWp2Un4rxVBL">10 个低频弹窗改为按需异步加载，首屏主包从 104.75kB 降至 70.46kB，打开应用更快一步。</p>
+        <div class="bar" data-page-node-id="dFTf9KwaoXBFDxlA5TqXVZ"><i data-w="88" data-page-node-id="354oGHA4NcFlA8pTEWS1y2"></i></div>
+      </div>
+      <div class="perf reveal" data-page-node-id="3w8KO1x6YNCaqbsOFwdTfe">
+        <h3 data-page-node-id="oVari5Y5dHt24QpaqvEPWj">空闲预生成缩略图 <span class="gain" data-page-node-id="RAHWdDuDjHcJ6AHLGdL5o8">即点即有<span class="new-badge" data-page-node-id="gmCFjx7HtKainCVWOtNcN5">NEW</span></span></h3>
+        <p data-page-node-id="6CK2qzFO9EN5lrfomVyXow">浏览空闲时后台批量预生成当前目录缩略图（单批 400 张、扫描优先让位），打开目录不再等缩略图逐个加载。</p>
+        <div class="bar" data-page-node-id="8wO6dmyfNz4WGMk0HujF2Z"><i data-w="94" data-page-node-id="V07mXlipD73GdMOF6XvXsM"></i></div>
+      </div>
+      <div class="perf reveal d1" data-page-node-id="AYEP9xINC4ZAMZeNFc80C3">
+        <h3 data-page-node-id="rGt9j8mJxMmtQnoecw0OPV">数据库一键优化 <span class="gain" data-page-node-id="gGGMCX03cx4RqRdtL4SUiH">VACUUM 压缩<span class="new-badge" data-page-node-id="syEAHqTWX2x9HzxdPXpYZW">NEW</span></span></h3>
+        <p data-page-node-id="cIjjobeshjYjqQ6OzrjsaE">设置面板新增「优化数据库」：WAL 截断 + 索引优化 + VACUUM 压缩，一次点击即显示释放空间，索引更快更瘦。</p>
+        <div class="bar" data-page-node-id="jHMGKRxvskdhaeKJv3NBs5"><i data-w="86" data-page-node-id="UtEhaVHpCb4j0UT3DE1IKs"></i></div>
+      </div>
+      <div class="perf reveal d2" data-page-node-id="0IigNv9pRLo0CBQMOidAD5">
+        <h3 data-page-node-id="d468rELGODJGKLXM5OOFIb">Rust 激进编译 <span class="gain" data-page-node-id="AnA5kQro10nwSLisJSvTKU">二进制更小<span class="new-badge" data-page-node-id="eQob44Y3eB3iaNhHsNH4sJ">NEW</span></span></h3>
+        <p data-page-node-id="btljIaR7nZpsa6JtEpZ53C">全程序链接优化（fat LTO）+ panic=abort，移除无用栈展开代码路径，主程序体积再缩、运行更快。</p>
+        <div class="bar" data-page-node-id="eXDVsP6NYcYjn8kQ4NHq2T"><i data-w="85" data-page-node-id="JECi6Xk0vFcoU5p1emKOqN"></i></div>
+      </div>
+      <div class="perf reveal d3" data-page-node-id="Coo9JfeVklgw0a4S966KcM">
+        <h3 data-page-node-id="LeHtyXdztqclGXzcuBTJOX">增量索引扫描 <span class="gain" data-page-node-id="5eq6ABPjZfiDEC9XeF8JMq">最快 12×</span></h3>
+        <p data-page-node-id="P0FcvWArHYCkNpxiuqyTaZ">对比文件快照 (path + 修改时间)，未变化的文件直接跳过，仅处理新增 / 修改 / 删除，重扫几乎瞬时完成。</p>
+        <div class="bar" data-page-node-id="j4lWgv8wBU2zTkY93nvlFE"><i data-w="95" data-page-node-id="spPtOwe046vGHz5KjpUQAA"></i></div>
+      </div>
+      <div class="perf reveal" data-page-node-id="EUH2KXe3L9aQzX3GwZhN2J">
+        <h3 data-page-node-id="hL6fqxVAacZxwDdonmywqh">大图预览降采样 <span class="gain" data-page-node-id="nPSmjBrdVtdExWzlZHlWdI">内存 −90%</span></h3>
+        <p data-page-node-id="CXB3JtXPwx9Kyx1vKMDZvH">超过 1600px 的大图自动生成 WebP 预览（1.0.2-r4 起体积再减 60%），查看器与画中画共用缓存，打开不再爆内存。</p>
+        <div class="bar" data-page-node-id="H3oQcnWtEKWj29YrKBKaYn"><i data-w="90" data-page-node-id="WWfLhu5038p1ci8Feqasxc"></i></div>
+      </div>
+      <div class="perf reveal d1" data-page-node-id="bfXfWhtL6FF0EBBD42CfBk">
+        <h3 data-page-node-id="nlu8f2JCz69noQckBAwuCf">缩略图线程自适应 <span class="gain" data-page-node-id="Vf7H4Z5YzGGBkWmXZyDF6E">按核数 1–8<span class="new-badge" data-page-node-id="cyLS6jyDA9hjBToKh3mG70">NEW</span></span></h3>
+        <p data-page-node-id="9qoF9zMGUvJ2n5ZVorSe9p">缩略图并行线程数按 CPU 核数自动适配（不再写死 4），多核机器首屏缩略图更快。</p>
+        <div class="bar" data-page-node-id="W6D0al6GfCao25ibePQyXB"><i data-w="88" data-page-node-id="2aumnw2C5r4tfhaQbUhUUL"></i></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="storage" data-page-node-id="d07SLJzWFkh4RfynQirMAC">
+    <div class="kicker" data-page-node-id="zX9Na8ACHV7UkV8DLzagoq">Storage</div>
+    <h2 data-page-node-id="wXe0mA2Y5t06DQx9bSfQ7u">存储空间，尽在掌控</h2>
+    <p class="sec-desc" data-page-node-id="O4ciL1cbWFC3zo2ckI6lre">设置面板「存储空间」：实时显示应用数据总占用、应用本体大小与各级缓存明细，一键清缓存、一键优化数据库，绝不误删你的媒体文件。</p>
+    <div class="storage" data-page-node-id="SXqIrVYCbwm2AHja3hERQq">
+      <div class="panel reveal" data-page-node-id="qAUxQXGPseOxVH5A6DtggV">
+        <h3 data-page-node-id="XEO1YbVnJf6iOFbhafXq6D">数据目录结构</h3>
+        <div class="tree" style="margin-top:14px" data-page-node-id="2aWcd0qeGitlPTQKWu22DI">
+          <div data-page-node-id="WbgrubKxWU5hfgNf580uYx">~/Library/Application Support/vtmanager/</div>
+          <div data-page-node-id="BjqcqDZDsV5Vw6ER7ZEJL0">&nbsp;&nbsp;├─ <span class="file" data-page-node-id="1M0wFgph6rMlCA0XXEMVJ4">vtmanager.db</span><span class="sz" data-page-node-id="Mxpspm9CbUZxaqFeSCmBV5">主索引库（SQLite / WAL，可优化压缩）</span></div>
+          <div data-page-node-id="ury2XFPDhV2IxeW15eL7Kj">&nbsp;&nbsp;├─ <span class="dir" data-page-node-id="mi7qYfdUiK5Am6jv6EP0K9">cache/</span></div>
+          <div data-page-node-id="CsR3bgQSVpP5BycZKsJ1cJ">&nbsp;&nbsp;│&nbsp;&nbsp;├─ <span class="dir" data-page-node-id="sXH68ilAKfgect3WIIlyn6">thumbs/</span><span class="sz hl" data-page-node-id="HCyuwfbPEyz2XTxJwSiYrY">缩略图 · WebP · 可清除</span></div>
+          <div data-page-node-id="kUxuZsBnRu5HMUKaDdRXg6">&nbsp;&nbsp;│&nbsp;&nbsp;├─ <span class="dir" data-page-node-id="4EujRwU7cxA4FCWFP1LcNu">previews/</span><span class="sz hl" data-page-node-id="iC7y8jLdFTRD5TIil9OFDY">大图预览 · WebP · 可清除</span></div>
+          <div data-page-node-id="P1Q1OJkJvmpXVWvkGO6AEJ">&nbsp;&nbsp;│&nbsp;&nbsp;├─ <span class="dir" data-page-node-id="Dl1loUwvakdZuTWa9QcVSN">remux/</span><span class="sz" data-page-node-id="dEAHsZQtkBd6tFzfPqjfRe">转封装缓存</span></div>
+          <div data-page-node-id="aQJbrjG5GdOB9iJyJcRFtb">&nbsp;&nbsp;│&nbsp;&nbsp;└─ <span class="dir" data-page-node-id="eJdjg4gQ5KhhDIlDTTFIf2">trash/</span><span class="sz" data-page-node-id="N51ikCnxtxtFuLBfrCUw2a">回收站</span></div>
+          <div data-page-node-id="cIU1ycXzV2uo3DJyxynBPs">&nbsp;&nbsp;└─ <span class="dir" data-page-node-id="ovAFtw3mJWw8rMiX25IsXB">covers/</span><span class="sz ok" data-page-node-id="xdc9kxubshQaeLkMXrZsmr">封面（保留）</span></div>
+        </div>
+      </div>
+      <div class="panel reveal d1" data-page-node-id="GISVt38UNHcfPSuQ4CLkaz">
+        <h3 data-page-node-id="rIIwKbUUiirmcq71rAHDeA">一键清缓存 · 一键优化</h3>
+        <div class="size-row" data-page-node-id="tb1iIrotTG1RLPjv89U4EG"><span data-page-node-id="QjlBJdlBwy712vHZ1WZCeW">应用数据总占用</span><span class="v" id="sz-total" data-page-node-id="0CcfveRP3NpML1Fmq1tE1q">—</span></div>
+        <div class="size-row" data-page-node-id="etVAGDoAQJJBRdELClDqsv"><span data-page-node-id="0RVjH37tuwOp4DDCpFi8Ud">应用本体大小</span><span class="v" id="sz-app" data-page-node-id="JCgQ1qEpUsbI71JEcqDMMA">—</span></div>
+        <div class="size-row" data-page-node-id="0ZQcAbRF9Pg0B0Ojd6j1ao"><span data-page-node-id="SF20fuptqAZ67xjR5SSk8d">缓存（可清除）</span><span class="v danger" id="sz-cache" data-page-node-id="1tU3ZP6YPArEtSBZ41wmFK">—</span></div>
+        <div class="size-row" data-page-node-id="mMzP5SJZ8OsThWAhKdx1Oa"><span data-page-node-id="eYm8xB2vMu6FblzkHy7kQs">封面 / 回收站 / 数据库</span><span class="v" id="sz-keep" data-page-node-id="HLwGcXpRhE7oOmaYEBYktH">—</span></div>
+        <div class="btn-row" data-page-node-id="EzLEHw1ShwAWGyb0mFMJ4y">
+          <button class="clear-cache-btn" id="clearBtn" data-page-node-id="nGFK7qYINSN4HvPkbQWYVz">🗑 一键清除缓存</button>
+          <button class="opt-db-btn" id="optBtn" data-page-node-id="MnSw44409JAsmR7WrnEbH4">⚡ 优化数据库</button>
+        </div>
+        <div class="cache-note" data-page-node-id="r6txUInkF9v1IWLOa4EeNn">清除仅删除缩略图、预览与转封装缓存，重新浏览时按需重建；优化数据库将 VACUUM 压缩索引库。<b style="color:var(--ok)" data-page-node-id="AsLDX7tHz4yvfTw0IXHiEN">均不影响任何媒体文件与你的收藏标签</b>。</div>
+        <div class="cache-note" style="margin-top:8px" data-page-node-id="r10CacheDir001"><b>缓存目录一键直达</b>：「缓存保留时长」下方实时显示当前资料库的缓存目录（<span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px" data-page-node-id="r10CacheDirPath001">&lt;资料库根&gt;/.VTManager/cache</span>），点「进入缓存目录」在 Finder / 资源管理器中直接打开——切换资料库自动跟随更新，管理缓存文件不再手动翻路径。</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="guide" data-page-node-id="hdnE2Vr5KFDo2poIMH97Qm">
+    <div class="kicker" data-page-node-id="g74Qh2MtmIZav4lC4xOrU5">Quick Start</div>
+    <h2 data-page-node-id="cxEVn8sgpQRn77lkVQiTPB">60 秒快速上手</h2>
+    <p class="sec-desc" data-page-node-id="GDw0BdgMRE7lmAsOClVBoy">首次使用选择媒体目录开始扫描；之后每次打开自动增量同步，无需等待。</p>
+    <div class="steps" data-page-node-id="6ZW460SGD0YsB3MYZnJQ6x">
+      <div class="step reveal" data-page-node-id="a4AKh2nrYHNTSfqgeNlZjf"><b data-page-node-id="8z03BUZSHAN1gU5NEzpc1h">选择目录</b><span data-page-node-id="gtcRGsHuQSJHdZ6tDAxDZ2">打开应用，添加视频 / 图片根目录</span></div>
+      <div class="step reveal d1" data-page-node-id="q8p23rzZqotBAIvfi9kpNP"><b data-page-node-id="xjYCUS7GeUm70iBlFKRJlH">自动索引</b><span data-page-node-id="VPiAcWREqhM3Do4fqhqlCk">后台扫描生成缩略图，可边扫边浏览</span></div>
+      <div class="step reveal d2" data-page-node-id="dyK6JTOOuIjYYDlGKBSd3o"><b data-page-node-id="vt2LbbmbNNMBgo5Yn3EB6h">浏览管理</b><span data-page-node-id="Ja1jzChT4OSNLOf2DB0XG5">网格 / 分栏浏览，批量打标签、收藏</span></div>
+      <div class="step reveal d3" data-page-node-id="BV6BIS8bFGnQjMIvq0aIEV"><b data-page-node-id="8HRwFmUMN1JfECE05DPy2R">即点即播</b><span data-page-node-id="5rC0eJGMhe8fGApvg0AaEG">双击播放，断点续播、画中画、倍速、字幕与截图</span></div>
+    </div>
+    <h3 data-page-node-id="a1Gb7WCNEV8QmXLXOvpdEA">快捷键</h3>
+    <table class="reveal" data-page-node-id="ZBmFp04kF1pNmcLiC3CtMy">
+      <tr data-page-node-id="ouVPLAbv5ceCZNtX76sE4M"><th data-page-node-id="M7evX1kGor0Emv8Oh3fUD8">操作</th><th data-page-node-id="UGW5RD8HMlvueBO3Vzn5BU">快捷键</th><th data-page-node-id="RBsD81Yd8UBW7bFVneWSoZ">操作</th><th data-page-node-id="WnBJGyRUii8cIx508u400g">快捷键</th></tr>
+      <tr data-page-node-id="Hon7gyPhWN5fZFyPiFqXlX"><td data-page-node-id="lfIxkBRbo3oXUyxrfWr8be">搜索</td><td data-page-node-id="QqulbkuClHZ3j8HYVTrhAx"><kbd data-page-node-id="yKjR7k7o4HCNGjTbEndRN5">⌘</kbd> <kbd data-page-node-id="hBlB9iGy0sGkTLSjxvhaFX">F</kbd></td><td data-page-node-id="iyIRtXxyQ7qq9wGZtbZtMt">全屏播放</td><td data-page-node-id="1Kf8NXxaPFQ6wdlmSLYgfh"><kbd data-page-node-id="erFCBLacsGcC15JorzI9yt">␣</kbd> 播放 / 暂停 · <kbd data-page-node-id="wBuCGCuFlisqJDd0RTNN7O">F</kbd> 全屏</td></tr>
+      <tr data-page-node-id="uxaG9Y1kZIOeqTdr2tCe6s"><td data-page-node-id="soU7CBH60yOOc1VDFATjCr">批量选择</td><td data-page-node-id="xMSioJ7mAwUfEhqWyhsuxF"><kbd data-page-node-id="b5yHxjU6eJiqlEw54vhA7Q">⌘</kbd> 点击 多选</td><td data-page-node-id="zmeGpT7SC6uzgpIHHmeEV1">图片旋转</td><td data-page-node-id="yOHvy8oeitqkekaScfXICe"><kbd data-page-node-id="TmHNILSPDXZFW7MrDN3Ib6">↻</kbd> 按钮（全屏下可用）</td></tr>
+      <tr data-page-node-id="6q1ImWMCDYqANPXYjTfumD"><td data-page-node-id="GbBxThbvivCd8owsmlBsPB">切换视图</td><td data-page-node-id="cAmsIwNxeZZVeTs8UuACFD">工具栏「网格 / 分栏」</td><td data-page-node-id="zz6n93noI1Bc3VCBPhXofn">画中画</td><td data-page-node-id="cKNU9eA85DOKOMBom3RDfr">工具栏「PiP」按钮</td></tr>
+      <tr data-page-node-id="r6Shortcut001"><td data-page-node-id="r6Shk1">快退 / 快进 10 秒</td><td data-page-node-id="r6Shk2"><kbd data-page-node-id="r6Shk3">J</kbd> / <kbd data-page-node-id="r6Shk4">L</kbd></td><td data-page-node-id="r6Shk5">倍速 0.25–6.0</td><td data-page-node-id="r6Shk6"><kbd data-page-node-id="r6Shk7">[</kbd> / <kbd data-page-node-id="r6Shk8">]</kbd> · 控制栏菜单</td></tr>
+      <tr data-page-node-id="r7Shortcut001"><td data-page-node-id="r7Shk1">字幕开关</td><td data-page-node-id="r7Shk2"><kbd data-page-node-id="r7Shk3">C</kbd></td><td data-page-node-id="r7Shk4">当前帧截图</td><td data-page-node-id="r7Shk5"><kbd data-page-node-id="r7Shk6">S</kbd> · 控制栏相机按钮</td></tr>
+      <tr data-page-node-id="r10Shortcut001"><td data-page-node-id="r10Shk1">上 / 下一个视频</td><td data-page-node-id="r10Shk2"><kbd data-page-node-id="r10Shk3">←</kbd> / <kbd data-page-node-id="r10Shk4">→</kbd></td><td data-page-node-id="r10Shk5">长按临时 2× 加速</td><td data-page-node-id="r10Shk6">按住 <kbd data-page-node-id="r10Shk7">→</kbd> ≥ 0.4 秒进入 2×（上限 6×），松开恢复</td></tr>
+    </table>
+    <h3 data-page-node-id="C5AGa9n2KkaJe9GIs3bF6f">搜索技巧</h3>
+    <div class="tips" data-page-node-id="w2Hja5gJA1W83XOeIAl029">
+      <div class="tip reveal" data-page-node-id="Bj4TKKScZYFRDx8RTZfkSz"><b data-page-node-id="2Nvv0ggEUYh7go2ouC0KPq">💡 模糊匹配</b>：输入「钢铁侠」即可命中「钢铁侠3 IMAX 版.mp4」。</div>
+      <div class="tip reveal d1" data-page-node-id="nY5bgX30ME3NaHaADxiROc"><b data-page-node-id="DcyfduzIDfAlDu8nUo7I2H">💡 标签过滤</b>：搜索框筛选标签 / 收藏，快速定位收藏夹内容。</div>
+    </div>
+  </section>
+
+  <section class="block" id="faq" data-page-node-id="LsdfvHw4uT9pdsVZ71eIut">
+    <div class="kicker" data-page-node-id="SxtreSPnArUEf7wxTsRu3M">FAQ</div>
+    <h2 data-page-node-id="xMyv5FsiAlDXJiqhoifZGE">常见问题</h2>
+    <details class="reveal" open data-page-node-id="7Ta7hY1X1YSwCGzGeaq35c">
+      <summary data-page-node-id="VlKfbQSHQEDYLTWwbDVflW">清除缓存 / 优化数据库会影响我的媒体文件吗？</summary>
+      <div class="ans" data-page-node-id="1OE2iuIqsg1IYzR5o5Rj1p">完全不会。一键清除只删除缓存目录（缩略图 / 大图预览 / 转封装缓存）；优化数据库只压缩索引文件本身。你的原始视频、图片、标签、收藏与观看进度都保存在媒体原目录与索引数据库中，不受任何影响，重新浏览时会按需重建。</div>
+    </details>
+    <details class="reveal" data-page-node-id="CyBaI1bqYnxMgJHUGCQilG">
+      <summary data-page-node-id="KRC3QLjmM5mdcQHJQDNHAI">扫描到一半可以开始浏览吗？</summary>
+      <div class="ans" data-page-node-id="FoVFiA81ojqkANsTQFYhzG">可以。数据库开启 WAL 并发模式，扫描写入与浏览查询并行不互锁；缩略图线程按核数自适应并行生成，空闲预生成还会在扫描之后自动补全，首屏数据即刻可用。</div>
+    </details>
+    <details class="reveal" data-page-node-id="ACE9YjUgCOBSwXr7NAsh8w">
+      <summary data-page-node-id="IutXtDGpp6YL2BPFOIkviu">目录里文件特别多，会很卡吗？</summary>
+      <div class="ans" data-page-node-id="GBq2uLwk8AAjnEAHyDaFjw">不会。超过 120 项的目录自动启用虚拟滚动，页面只渲染可视区域内的卡片，滚动性能与目录大小无关，160+ 项的目录也能 60fps 平滑滚动。</div>
+    </details>
+    <details class="reveal" data-page-node-id="swrZbaZO3UllPVbaAmg4QF">
+      <summary data-page-node-id="3wRYOnaO1H4ValzYm4T3NZ">缓存会无限增长占满磁盘吗？</summary>
+      <div class="ans" data-page-node-id="AC8ELiAPv0ltRBIfYNQF0r">不会。三重保险：① 缩略图 / 预览缓存超过保留时长（默认 1 小时，可在设置选 1 / 6 / 24 小时或永不，也可自定义输入任意小时数 0–8760）未被再次查看即自动删除，之后访问按需重建；② 缓存总量达到 2GB 上限自动清理最旧缓存；③ 转封装副本关闭播放器即删。缩略图与预览已压缩为 WebP（预览体积较早期方案减少约 60%），也可随时在设置面板一键清除或优化数据库，空间占用一目了然。</div>
+    </details>
+    <details class="reveal" data-page-node-id="r6FaqTrash001">
+      <summary data-page-node-id="r6FaqTrashS1">回收站会自动清空吗？误删了怎么办？</summary>
+      <div class="ans" data-page-node-id="r6FaqTrashA1">回收站默认开启到期自动清除：文件 / 文件夹进入回收站后按设定天数（默认 3 天，可在设置 → 回收站改为 0–365 天，0=永不）自动彻底清除；每条记录都会显示剩余天数与到期日期。修改设置后，站内全部条目按当前时间重置到期时间并即时刷新显示（无需重进回收站）。删除确认弹窗会提示「文件将于 N 天后自动清除，请及时查验」——只要在到期前进入回收站恢复，文件就完好无损；到期后文件将被彻底删除、无法找回。</div>
+    </details>
+    <details class="reveal" data-page-node-id="r7FaqSub001">
+      <summary data-page-node-id="r7FaqSubS1">播放器怎么加载字幕？截图存在哪里？</summary>
+      <div class="ans" data-page-node-id="r7FaqSubA1">字幕：播放视频时自动探测同目录同名的 .srt / .vtt（含「电影名.zh.srt」等多语言后缀写法）；若未自动加载，可在控制栏 CC 菜单「选择字幕文件…」手动指定，或点「关闭字幕」清除。C 键开关字幕，字号 0.8 / 1 / 1.2 / 1.5 可调，画中画全屏窗口同步显示。截图：按 S 键或点控制栏相机按钮，当前帧以原分辨率 PNG 保存——默认保存到资料库根目录的 captures/ 文件夹，可在 CC 菜单「截图保存目录…」改成任意位置（下次启动仍记住）。</div>
+    </details>
+    <details class="reveal" data-page-node-id="r8FaqPrefs001">
+      <summary data-page-node-id="r8FaqPrefsS1">切换资料库后，设置会变吗？</summary>
+      <div class="ans" data-page-node-id="r8FaqPrefsA1">不会。所有应用设置（主题、回收站自动清除天数、缓存保留时长、播放 / 看图行为等）均为全局设置，存储在应用数据目录中，与资料库相互独立——切换资料库根目录不会重置任何设置；从旧版本升级时首次启动会自动把原资料库设置一次性迁移为全局默认，无需重新配置。</div>
+    </details>
+    <details class="reveal" data-page-node-id="r10Faq001">
+      <summary data-page-node-id="r10FaqS1">缓存目录在哪？长按右方向键是做什么的？</summary>
+      <div class="ans" data-page-node-id="r10FaqA1"><b>缓存目录</b>：当前资料库的缓存位于资料库根目录的 <span style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:11px" data-page-node-id="r10FaqCode1">&lt;库根&gt;/.VTManager/cache</span> 下（thumbs 缩略图 / previews 大图预览 / scrubs 帧预览精灵图 / remux 转封装副本）。打开设置 → 存储空间，在「缓存保留时长」下方即可看到完整路径，点「进入缓存目录」按钮一键在 Finder / 资源管理器中打开；切换资料库后该路径自动跟随更新。<b>长按加速</b>：播放视频时按住右方向键不放约 0.4 秒即以当前倍速的 2 倍速播放（如 1.5× → 3×，上限 6×），松开立即恢复原倍速，适合快速跳过片段；轻点一下仍是「下一个视频」，不受影响。</div>
+    </details>
+  </section>
+
+</div>
+
+<footer data-page-node-id="DnnHdWdLmtpqhXoiEQfYOp">
+  <div data-page-node-id="kurmE5HXkVKDluLufkudhK">VTManager <span class="f-grad" data-page-node-id="Afx4AatGjbNe6VSRWYJUKA">v1.0.2 · 性能进化版</span> — 本地媒体管理器 · 数据 100% 本地存储</div>
+  <div style="margin-top:6px" data-page-node-id="h8EakyPWGrh3jeFlOVFj9W">Tauri 2 · Vue 3 · SQLite · AVFoundation · macOS</div>
+</footer>
+
+<div class="cache-toast" id="toast" data-page-node-id="J3ty5RRzxr128RqNWCcSMt">✓ 缓存已清除，释放 1.24 GB</div>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ===== 粒子背景 ===== */
+  var cv = document.getElementById("stars"), ctx = cv.getContext("2d");
+  var W, H, dots = [];
+  function resize() {
+    W = cv.width = window.innerWidth; H = cv.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener("resize", resize);
+  function makeDots() {
+    dots = [];
+    var n = Math.min(110, Math.floor(W * H / 16000));
+    for (var i = 0; i < n; i++) {
+      dots.push({
+        x: Math.random() * W, y: Math.random() * H,
+        r: Math.random() * 1.4 + 0.3,
+        vx: (Math.random() - 0.5) * 0.22, vy: (Math.random() - 0.5) * 0.22,
+        a: Math.random() * 0.5 + 0.15
+      });
+    }
+  }
+  makeDots();
+  window.addEventListener("resize", makeDots);
+  (function tick() {
+    ctx.clearRect(0, 0, W, H);
+    for (var i = 0; i < dots.length; i++) {
+      var d = dots[i];
+      d.x += d.vx; d.y += d.vy;
+      if (d.x < 0 || d.x > W) d.vx *= -1;
+      if (d.y < 0 || d.y > H) d.vy *= -1;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(140,180,255," + d.a + ")";
+      ctx.fill();
+    }
+    for (var j = 0; j < dots.length; j++) {
+      for (var k = j + 1; k < dots.length; k++) {
+        var dx = dots[j].x - dots[k].x, dy = dots[j].y - dots[k].y;
+        var dist2 = dx * dx + dy * dy;
+        if (dist2 < 140 * 140) {
+          ctx.beginPath();
+          ctx.moveTo(dots[j].x, dots[j].y);
+          ctx.lineTo(dots[k].x, dots[k].y);
+          ctx.strokeStyle = "rgba(120,160,255," + (0.12 * (1 - dist2 / 19600)) + ")";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        }
+      }
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  /* ===== 滚动渐入 ===== */
+  var io = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { e.target.classList.add("on"); io.unobserve(e.target); }
+    });
+  }, { threshold: 0.12 });
+  document.querySelectorAll(".reveal").forEach(function (el) { io.observe(el); });
+
+  /* ===== 数字滚动 ===== */
+  function animateCount(el) {
+    var target = parseInt(el.getAttribute("data-target"), 10), cur = 0, step = Math.max(1, Math.ceil(target / 50));
+    var t = setInterval(function () {
+      cur += step;
+      if (cur >= target) { cur = target; clearInterval(t); }
+      el.textContent = cur;
+    }, 24);
+  }
+  var cio = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { animateCount(e.target); cio.unobserve(e.target); }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll(".count").forEach(function (el) { cio.observe(el); });
+
+  /* ===== 进度条 ===== */
+  var bio = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) {
+        e.target.style.width = e.target.getAttribute("data-w") + "%";
+        bio.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll(".bar i").forEach(function (el) { bio.observe(el); });
+
+  /* ===== 存储演示：模拟磁盘统计 + 红色清缓存 + 绿色优化数据库 ===== */
+  var MB = 1024 * 1024;
+  var demo = {
+    total: 2.46 * 1024, app: 63 * MB, thumbs: 890 * MB, previews: 260 * MB, remux: 120 * MB, keep: 1.22 * 1024 * MB
+  };
+  function fmt(n) {
+    if (n >= 1024 * MB) return (n / 1024 / MB).toFixed(2) + " GB";
+    return (n / MB).toFixed(0) + " MB";
+  }
+  function renderSizes() {
+    var cache = demo.thumbs + demo.previews + demo.remux;
+    document.getElementById("sz-total").textContent = fmt(demo.total);
+    document.getElementById("sz-app").textContent = fmt(demo.app);
+    document.getElementById("sz-cache").textContent = fmt(cache);
+    document.getElementById("sz-keep").textContent = fmt(demo.keep);
+  }
+  renderSizes();
+
+  var toast = document.getElementById("toast");
+  var toastTimer = null;
+  function showToast(msg) {
+    toast.innerHTML = msg;
+    toast.classList.add("show");
+    if (toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toast.classList.remove("show"); }, 3200);
+  }
+
+  var clearBtn = document.getElementById("clearBtn");
+  clearBtn.addEventListener("click", function () {
+    if (clearBtn.disabled) return;
+    clearBtn.disabled = true;
+    clearBtn.innerHTML = '<span class="spin"></span>正在清除…';
+    var released = demo.thumbs + demo.previews + demo.remux;
+    setTimeout(function () {
+      demo.thumbs = 0; demo.previews = 0; demo.remux = 0;
+      demo.total = demo.keep;
+      renderSizes();
+      clearBtn.innerHTML = "🗑 一键清除缓存";
+      clearBtn.disabled = false;
+      showToast("✓ 缓存已清除，释放 " + fmt(released));
+    }, 900);
+  });
+
+  var optBtn = document.getElementById("optBtn");
+  optBtn.addEventListener("click", function () {
+    if (optBtn.disabled) return;
+    optBtn.disabled = true;
+    optBtn.innerHTML = '<span class="spin"></span>正在压缩…';
+    setTimeout(function () {
+      var released = 0.5 * 1024 * MB;
+      demo.keep = Math.max(MB, demo.keep - released);
+      demo.total = demo.keep + demo.thumbs + demo.previews + demo.remux;
+      renderSizes();
+      optBtn.innerHTML = "⚡ 优化数据库";
+      optBtn.disabled = false;
+      showToast("✓ 数据库已优化，释放 " + fmt(released));
+    }, 700);
+  });
+
+  /* ===== 导航滚动高亮 ===== */
+  var nav = document.querySelector("nav");
+  window.addEventListener("scroll", function () {
+    if (window.scrollY > 10) { nav.style.background = "rgba(7,11,22,.82)"; } else { nav.style.background = "rgba(7,11,22,.55)"; }
+  });
+})();
+</script>
+</body>
+</html>

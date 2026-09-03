@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>VTManager Flow Test</title>
+  <style>
+    body { background:#222; color:#fff; font-family: monospace; padding: 20px; }
+    pre { background:#000; padding:10px; border-radius:4px; white-space: pre-wrap; }
+    .ok { color: #6f6; }
+    .err { color: #f66; }
+    h2 { color: #6cf; }
+  </style>
+</head>
+<body>
+  <h2>VTManager Video/Image Playback Flow Test</h2>
+  <pre id="log">Loading...</pre>
+  <script type="module">
+    // Import the mocked tauri API
+    const { invoke } = await import('/src/mock/tauri.ts');
+
+    const log = document.getElementById('log');
+    function L(s, cls) {
+      const span = `<span class="${cls || ''}">${s}</span>`;
+      log.innerHTML += span + '\n';
+      console.log(s);
+    }
+
+    async function test() {
+      log.innerHTML = '';
+      L('=== Testing Video Playback Flow ===\n');
+
+      // --- VIDEO FLOW ---
+      L('--- Video Player ---', 'ok');
+
+      try {
+        const base = await invoke('stream_base');
+        L('✓ stream_base → ' + base);
+      } catch (e) {
+        L('✗ stream_base: ' + e.message, 'err');
+      }
+
+      try {
+        const moov = await invoke('moov_position', { path: '/Volumes/VTMock/千与千寻.mp4' });
+        L('✓ moov_position → ' + moov);
+      } catch (e) {
+        L('✗ moov_position: ' + e.message, 'err');
+      }
+
+      try {
+        const job = await invoke('start_remux', { path: '/Volumes/VTMock/千与千寻.mp4' });
+        L('✓ start_remux → ' + JSON.stringify(job));
+      } catch (e) {
+        L('✗ start_remux: ' + e.message, 'err');
+      }
+
+      try {
+        const st = await invoke('remux_status', { path: '/Volumes/VTMock/千与千寻.mp4' });
+        L('✓ remux_status → ' + JSON.stringify(st));
+      } catch (e) {
+        L('✗ remux_status: ' + e.message, 'err');
+      }
+
+      try {
+        const info = await invoke('video_info', { path: '/Volumes/VTMock/千与千寻.mp4' });
+        L('✓ video_info → ' + JSON.stringify(info));
+      } catch (e) {
+        L('✗ video_info: ' + e.message, 'err');
+      }
+
+      L('\n--- PiP Window (video) ---', 'ok');
+
+      try {
+        const label = await invoke('open_pip_window', {
+          args: {
+            kind: 'video',
+            list: [{ path: '/Volumes/VTMock/千与千寻.mp4', name: '千与千寻.mp4', kind: 'video', cover: null }],
+            index: 0,
+            root: '/Volumes/VTMock',
+            covers_dir: '/Volumes/VTMock/.VTManager/covers'
+          }
+        });
+        L('✓ open_pip_window → label=' + label);
+      } catch (e) {
+        L('✗ open_pip_window: ' + e.message, 'err');
+      }
+
+      try {
+        const payload = await invoke('get_pip_payload', { label: 'pip-video-test' });
+        L('✓ get_pip_payload → ' + JSON.stringify(payload).substring(0, 300));
+      } catch (e) {
+        L('✗ get_pip_payload: ' + e.message, 'err');
+      }
+
+      try {
+        await invoke('close_pip_window', { label: 'pip-video-test' });
+        L('✓ close_pip_window done');
+      } catch (e) {
+        L('✗ close_pip_window: ' + e.message, 'err');
+      }
+
+      L('\n=== All tests complete ===', 'ok');
+    }
+
+    test().catch(e => L('FATAL: ' + e.message, 'err'));
+  </script>
+</body>
+</html>

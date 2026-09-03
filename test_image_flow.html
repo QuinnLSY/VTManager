@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Image Flow Test</title>
+  <style>body{background:#222;color:#fff;font-family:monospace;padding:20px}pre{background:#000;padding:10px;border-radius:4px}</style>
+</head>
+<body>
+<h2>Image Viewer PiP Flow Test</h2>
+<pre id="log"></pre>
+<script type="module">
+import { invoke } from 'http://localhost:5199/src/mock/tauri.ts';
+
+const log = document.getElementById('log');
+function L(s) { log.textContent += s + '\n'; console.log(s); }
+
+async function test() {
+  L('=== Image Viewer PiP Flow ===\n');
+  try {
+    // 1. Open PiP window
+    const label = await invoke('open_pip_window', {
+      args: {
+        kind: 'image',
+        list: [{ path: '/Volumes/VTMock/photos/sample.jpg', name: 'sample.jpg', kind: 'image', cover: null }],
+        index: 0,
+        root: '/Volumes/VTMock',
+        covers_dir: '/Volumes/VTMock/.VTManager/covers'
+      }
+    });
+    L('✓ open_pip_window label: ' + label);
+
+    // 2. Get PiP payload
+    const payload = await invoke('get_pip_payload', { label });
+    L('✓ get_pip_payload: ' + JSON.stringify(payload).substring(0, 300));
+
+    // 3. Get streamBase
+    const sb = await invoke('stream_base');
+    L('✓ stream_base: ' + sb);
+
+    // 4. Simulate PiP component rendering
+    if (payload && payload.kind === 'image') {
+      const entry = payload.list[payload.index];
+      L('Image entry: ' + entry.path);
+      L('Image src: ' + sb + 'raw/' + btoa(entry.path).replace(/=/g, ''));
+    }
+
+    // 5. Close PiP
+    await invoke('close_pip_window', { label });
+    L('✓ close_pip_window done');
+
+  } catch (e) {
+    L('✗ error: ' + e.message);
+  }
+}
+
+test();
+</script>
+</body>
+</html>

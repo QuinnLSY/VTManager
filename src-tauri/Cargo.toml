@@ -1,0 +1,54 @@
+[package]
+name = "vtmanager"
+version = "1.0.2"
+description = "VTManager - 影视与图片本地管理应用"
+edition = "2021"
+
+[lib]
+name = "vtmanager_lib"
+path = "src/lib.rs"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset"] }
+tauri-plugin-dialog = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+rusqlite = { version = "0.32", features = ["bundled"] }
+notify = "6"
+walkdir = "2"
+image = { version = "0.25", features = ["webp"] }
+# 有损 WebP 编码（1.0.2 缓存格式优化用）：libwebp 绑定，缩略图/预览缓存体积降约 40%
+webp = "0.2"
+kamadak-exif = "0.6"
+pinyin = "0.10"
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls", "json"] }
+base64 = "0.22"
+filetime = "0.2"
+# 字幕文件编码检测（1.0.2-r7）：UTF-8 严格解码失败时按 GBK 解码（常见于 Windows 导出的 .srt）
+encoding_rs = "0.8"
+tokio = { version = "1", features = ["rt-multi-thread"] }
+
+# 性能优化（1.0.1-r13：thin LTO + 单 codegen-unit；1.0.2：升级 fat LTO + panic=abort）：
+# - lto = "fat"：全程序链接优化，比 thin 进一步减小二进制并提升运行性能
+# - panic = "abort"：移除 unwind 栈展开代码路径，二进制更小、执行更快
+# - 代价均为编译时间增加；strip 保留
+[profile.release]
+opt-level = 2
+strip = true
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2 = "0.6"
+# objc2-core-media 特性：启用 AVAsset::duration() / copyCGImageAtTime 等核心方法
+objc2-av-foundation = { version = "0.3", features = ["objc2-core-media"] }
+objc2-core-foundation = "0.3"
+objc2-core-graphics = "0.3"
+objc2-core-media = "0.3"
+objc2-foundation = "0.3"
+# ImageIO：CGImage -> JPEG 编码（AVFoundation 截帧写盘）
+objc2-image-io = "0.3"

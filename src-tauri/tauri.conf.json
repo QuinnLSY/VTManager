@@ -1,0 +1,51 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "VTManager",
+  "version": "1.0.2",
+  "identifier": "com.vtmanager.app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:5173",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "VTManager — 影视图片管理",
+        "width": 1360,
+        "height": 860,
+        "minWidth": 1000,
+        "minHeight": 640,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": {
+          "allow": ["**"],
+          "requireLiteralLeadingDot": false
+        }
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["app", "nsis", "msi"],
+    "icon": ["icons/icon.icns", "icons/icon.ico"],
+    "windows": {
+      "webviewInstallMode": {
+        "type": "downloadBootstrapper"
+      },
+      "nsis": {
+        "languages": ["SimpChinese"],
+        "installMode": "currentUser"
+      },
+      "wix": {
+        "language": "zh-CN"
+      }
+    }
+  }
+}

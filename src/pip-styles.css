@@ -1,0 +1,322 @@
+/* 独立画中画窗口的样式（仅打包播放器/查看器所需的最小样式集） */
+
+:root {
+  --primary: #3e8fd6;
+  --primary-deep: #2f6fb5;
+  --text: #2c3e50;
+  --text-sub: #5d7793;
+  --text-faint: #93a8be;
+  --border: #d6e3ee;
+  --border-strong: #b8c9d8;
+  --bg: #f4f7fa;
+  --panel: #ffffff;
+}
+[data-theme="dark"] {
+  --primary: #4a9ee0;
+  --primary-deep: #6db5ee;
+  --text: #e6edf4;
+  --text-sub: #b1c2d4;
+  --text-faint: #7f9db8;
+  --border: #2a3a4a;
+  --border-strong: #3a4a5c;
+  --bg: #0e1a26;
+  --panel: #182430;
+}
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: #000;
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei", sans-serif;
+  font-size: 13px;
+  overflow: hidden;
+  user-select: none;
+}
+#pip {
+  height: 100%;
+}
+
+.pip-root {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+  color: #cfe3f5;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 视频画面 / 图片画布：填满整个 PiP 窗口 */
+.pip-body {
+  flex: 1;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  overflow: hidden;
+}
+.pip-body video {
+  width: 100%;
+  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  object-fit: contain;
+  outline: none;
+  display: block;
+  background: #000;
+}
+.pip-body video.fill {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  outline: none;
+  display: block;
+  background: #000;
+}
+
+/* 图片查看器画布 */
+.pip-stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  position: relative;
+  min-height: 0;
+  user-select: none;
+}
+.pip-stage img {
+  transform-origin: center;
+  transition: transform 0.12s ease-out;
+  cursor: grab;
+  box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+}
+
+/* 进入/退出全屏按钮：固定置于右上角；与「下一个」按钮风格一致（44px 圆形），
+   与「下一个」按钮垂直相距半个图标高度（22px） */
+.pip-nav {
+  position: absolute;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: opacity 0.35s ease, background 0.15s, transform 0.15s;
+  z-index: 6;
+}
+.pip-nav:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: scale(1.06);
+}
+.pip-nav svg {
+  width: 18px;
+  height: 18px;
+}
+.pip-nav.prev,
+.pip-nav.next {
+  font-size: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.pip-nav.prev:hover,
+.pip-nav.next:hover {
+  transform: translateY(-50%) scale(1.06);
+}
+.pip-nav.prev {
+  left: 20px;
+}
+.pip-nav.next {
+  right: 20px;
+}
+/* 全屏按钮：「下一个」按钮正下方，相距半个图标高度（22px）。
+   「下一个」按钮 top=50% + translateY(-50%)，底部在 50%+22px；
+   全屏按钮 top=50%+44px，顶部在 50%+44px；
+   两按钮边缘之间 22px 间距（半个图标高度）。全屏/非全屏时该相对位置不变。 */
+.pip-nav.fs {
+  top: calc(50% + 44px);
+  right: 20px;
+}
+/* 旋转按钮：全屏按钮正下方，同样相距半个图标高度（22px）。
+   top = 50% + 44px(全屏按钮 top) + 44px(全屏按钮高) + 22px(间距) = 50% + 110px */
+.pip-nav.fs.rot {
+  top: calc(50% + 110px);
+}
+.pip-nav.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 缩略图条（图片）：底部居中，可横向滚动 */
+.pip-strip {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(86%, 880px);
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 7px;
+  background: rgba(8, 18, 30, 0.55);
+  border-radius: 10px;
+  z-index: 4;
+  transition: opacity 0.35s ease;
+  cursor: grab;
+}
+.pip-strip.dragging {
+  cursor: grabbing;
+  scroll-behavior: auto;
+}
+.pip-strip::-webkit-scrollbar {
+  display: none;
+}
+.pip-strip img {
+  width: 60px;
+  height: 45px;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0.72;
+  object-fit: cover;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+  pointer-events: auto;
+}
+.pip-strip img:hover {
+  opacity: 1;
+}
+.pip-strip img.cur {
+  opacity: 1;
+  outline: 2px solid #6db5ee;
+  outline-offset: 1px;
+}
+.pip-strip.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+/* 缩略图占位：视频尚未生成缩略图/封面时占住同样的 60×45 格子 */
+.pip-strip .thumb-ph {
+  width: 60px;
+  height: 45px;
+  border-radius: 6px;
+  cursor: pointer;
+  opacity: 0.72;
+  object-fit: cover;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #cfe3f5;
+}
+.pip-strip .thumb-ph:hover {
+  opacity: 1;
+}
+.pip-strip .thumb-ph.cur {
+  opacity: 1;
+  outline: 2px solid #6db5ee;
+  outline-offset: 1px;
+}
+
+/* 计数 / 提示：左下角，竖排显示（每行一项），文字左对齐 */
+.pip-count {
+  position: absolute;
+  bottom: 16px;
+  left: 16px;
+  color: #9db8d0;
+  font-size: 12px;
+  background: rgba(8, 18, 30, 0.55);
+  padding: 8px 12px;
+  border-radius: 8px;
+  pointer-events: none;
+  text-align: left;
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  transition: opacity 0.35s ease;
+}
+.pip-count.hidden {
+  opacity: 0;
+}
+.pip-count.up {
+  bottom: 16px;
+}
+
+/* 转封装进度（视频） */
+.remux-bar {
+  width: min(420px, 70vw);
+  height: 10px;
+  margin: 14px auto 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+.remux-fill {
+  height: 100%;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #3e8fd6, #6db5ee);
+  transition: width 0.4s ease;
+}
+.remux-msg {
+  text-align: center;
+  color: #9db8d0;
+}
+.remux-msg .big {
+  font-size: 44px;
+  margin-bottom: 14px;
+}
+.remux-msg p {
+  margin-bottom: 18px;
+  line-height: 1.8;
+}
+
+/* 加载 / 错误占位 */
+.pip-fallback {
+  text-align: center;
+  color: #9db8d0;
+}
+.pip-fallback .big {
+  font-size: 44px;
+  margin-bottom: 14px;
+}
+.pip-fallback p {
+  margin-bottom: 18px;
+  line-height: 1.8;
+}
+
+/* 快捷键 HUD */
+.pip-hud {
+  position: absolute;
+  bottom: 84px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 7;
+  color: #fff;
+  font-size: 13px;
+  background: rgba(8, 18, 30, 0.78);
+  padding: 7px 18px;
+  border-radius: 16px;
+  pointer-events: none;
+  animation: fadeIn 0.15s ease;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
